@@ -9,9 +9,15 @@
 .ninja_log
 CMakeCache.txt
 CMakeFiles/
+CTestTestfile.cmake
+DartConfiguration.tcl
 Makefile
+Testing/
+args_tests_*.cmake
 build*.ninja
 cmake_install.cmake
+doctestConfig.cmake
+doctestConfigVersion.cmake
 install_manifest.txt
 
 # Generated Artifacts
@@ -22,6 +28,7 @@ install_manifest.txt
 *.lib
 *.pdb
 *.so
+args_tests
 example.basic
 example.group
 
