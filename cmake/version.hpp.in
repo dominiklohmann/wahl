@@ -1,0 +1,5 @@
+// SPDX-License-Identifier: BSL-1.0
+
+#pragma once
+
+#define @UPPERCASE_PROJECT_NAME@_VERSION "@PROJECT_VERSION@"
