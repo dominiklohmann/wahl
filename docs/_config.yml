@@ -1,4 +1,9 @@
-title: 'args: Type-safe argument parser for modern C++'
-remote_theme: 'pmarsceill/just-the-docs'
-color_scheme: 'dark'
+title: 'args'
+description: 'Type-safe argument parser for modern C++'
+author:
+  name: 'Dominik Lohmann'
+  mail: 'mail@dominiklohmann.de'
+  github_username: 'dominiklohmann'
+remote_theme: pmarsceill/just-the-docs
+color_scheme: dark
 search_enabled: true
