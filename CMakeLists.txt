@@ -35,7 +35,7 @@ target_include_directories(args
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>)
 
-  # Enable the install target.
+# Enable the install target.
 string(TOLOWER ${PROJECT_NAME}/version.hpp VERSION_HEADER_LOCATION)
 InstallProject(
   NAME "${PROJECT_NAME}"
@@ -48,4 +48,5 @@ InstallProject(
   COMPATIBILITY SameMajorVersion
   LICENSE "${CMAKE_CURRENT_LIST_DIR}/LICENSE"
   README "${CMAKE_CURRENT_LIST_DIR}/docs/README.md"
+  CHANGELOG "${CMAKE_CURRENT_LIST_DIR}/docs/CHANGELOG.md"
   DEPENDENCIES "")
