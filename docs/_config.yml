@@ -9,3 +9,5 @@ color_scheme: dark
 search_enabled: true
 exclude:
   - 'security.md'
+  - 'code_of_conduct.md'
+  - 'contributing.md'

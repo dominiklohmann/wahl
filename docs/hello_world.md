@@ -1,7 +1,5 @@
 ---
 title: Hello, world!
-has_children: false
-nav_order: 1
 ---
 
 # Lorem Ipsum
