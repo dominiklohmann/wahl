@@ -1,1 +1,9 @@
-/build/
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+build*.ninja
+Makefile
+
+# Compilation Database
+compile_commands.json
