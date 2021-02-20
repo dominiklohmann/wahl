@@ -38,7 +38,8 @@ function (InstallProject)
   endif ()
 
   if (DEFINED PROJECT_VERSION_HEADER)
-    set(PROJECT_VERSION_INCLUDE_DIR ${PROJECT_BINARY_DIR}/InstallProjectInclude)
+    set(PROJECT_VERSION_INCLUDE_DIR
+      "${PROJECT_BINARY_DIR}/CMakeFiles/InstallProjectInclude")
     string(TOUPPER ${PROJECT_NAME} UPPERCASE_PROJECT_NAME)
     configure_file(
       "${INSTALL_PROJECT_ROOT_PATH}/version.hpp.in"
@@ -58,7 +59,7 @@ function (InstallProject)
   endif ()
 
   write_basic_package_version_file(
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    "${PROJECT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}ConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY ${PROJECT_COMPATIBILITY})
 
@@ -86,7 +87,7 @@ function (InstallProject)
 
   configure_package_config_file(
     "${INSTALL_PROJECT_ROOT_PATH}/Config.cmake.in"
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    "${PROJECT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}Config.cmake"
     INSTALL_DESTINATION
       "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}${PROJECT_VERSION_SUFFIX}")
 
@@ -97,8 +98,9 @@ function (InstallProject)
     NAMESPACE ${PROJECT_NAMESPACE})
 
   install(
-    FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-          "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    FILES
+      "${PROJECT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}ConfigVersion.cmake"
+      "${PROJECT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}Config.cmake"
     DESTINATION
       "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}${PROJECT_VERSION_SUFFIX}")
 
