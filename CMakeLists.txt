@@ -8,8 +8,7 @@ project(
 
 # -- include utlity libraries -------------------------------------------------
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-include(InstallProject)
+include(cmake/InstallProject.cmake)
 
 # -- create library target ----------------------------------------------------
 

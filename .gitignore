@@ -1,9 +1,15 @@
 # CMake
+.ninja_deps
+.ninja_log
 CMakeCache.txt
 CMakeFiles/
-cmake_install.cmake
-build*.ninja
 Makefile
+build*.ninja
+cmake_install.cmake
+install_manifest.txt
+
+# Generated Artifacts
+libargs.a
 
 # Compilation Database
 compile_commands.json
