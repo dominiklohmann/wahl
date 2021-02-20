@@ -18,6 +18,10 @@
 
 #include <cassert>
 
+#if defined(_MSC_VER)
+#include <ciso646>
+#endif
+
 #define ARGS_RETURNS(...)                                                      \
   ->decltype(__VA_ARGS__) { return (__VA_ARGS__); }
 
