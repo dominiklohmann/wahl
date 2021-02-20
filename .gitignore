@@ -1,9 +1,29 @@
 # CMake
+*.dir/
+*.recipe
+*.sln
+*.tlog/
+*.vcxproj
+*.vcxproj.filters
+.ninja_deps
+.ninja_log
 CMakeCache.txt
 CMakeFiles/
-cmake_install.cmake
-build*.ninja
 Makefile
+build*.ninja
+cmake_install.cmake
+install_manifest.txt
+
+# Generated Artifacts
+*.a
+*.dylib
+*.exe
+*.ilk
+*.lib
+*.pdb
+*.so
+example.basic
+example.group
 
 # Compilation Database
 compile_commands.json

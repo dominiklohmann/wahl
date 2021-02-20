@@ -41,3 +41,30 @@ jobs:
       - name: 'Build'
         run: |
           cmake --build build --parallel 4
+
+      - name: 'Install (Ubuntu)'
+        if: ${{ matrix.os.name == 'Ubuntu' }}
+        run: |
+          sudo cmake --build build --target install
+
+      - name: 'Install (macOS/Windows)'
+        if: ${{ matrix.os.name != 'Ubuntu' }}
+        run: |
+          cmake --build build --target install
+
+      - name: 'Build Example: Basic'
+        working-directory: examples/basic
+        run: |
+          cmake -Bbuild
+          cmake --build build --parallel 4
+
+      - name: 'Build Example: Group'
+        working-directory: examples/group
+        run: |
+          cmake -Bbuild
+          cmake --build build --parallel 4
+
+      - name: 'Check for Untracked Files'
+        run: |
+          git add --all
+          git diff --exit-code HEAD
