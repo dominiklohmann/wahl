@@ -41,3 +41,23 @@ jobs:
       - name: 'Build'
         run: |
           cmake --build build --parallel 4
+
+      - name: 'Install'
+        run: |
+          sudo cmake --build build --target install
+
+      - name: 'Build Example: Basic'
+        working-directory: examples/basic
+        run: |
+          cmake -Bbuild
+          cmake --build build --parallel 4
+
+      - name: 'Build Example: Group'
+        working-directory: examples/group
+        run: |
+          cmake -Bbuild
+          cmake --build build --parallel 4
+
+      - name: 'Check for Untracked Files'
+        run: |
+          [ -z "$(git status --porcelain)" ]

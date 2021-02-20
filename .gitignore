@@ -10,6 +10,8 @@ install_manifest.txt
 
 # Generated Artifacts
 libargs.a
+example.basic
+example.group
 
 # Compilation Database
 compile_commands.json
