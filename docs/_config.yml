@@ -7,4 +7,5 @@ author:
 remote_theme: pmarsceill/just-the-docs
 color_scheme: dark
 search_enabled: true
-exclude: ['./security.md']
+exclude:
+  - 'security.md'
