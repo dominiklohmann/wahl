@@ -21,24 +21,22 @@ file(GLOB_RECURSE sources CONFIGURE_DEPENDS
 # Create a library target.
 add_library(args ${sources})
 
-# Enforce standard conformance.
-set_target_properties(args
-  PROPERTIES
-    CXX_STANDARD 17
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON)
+# Building args (and linking against it) requires C++17.
+target_compile_features(args PUBLIC cxx_std_17)
 
+# Enforce standard compliance for MSVC.
 target_compile_options(args
   PUBLIC
     "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive>")
 
+# Set the include directory properly.
 target_include_directories(args
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>)
 
+  # Enable the install target.
 string(TOLOWER ${PROJECT_NAME}/version.hpp VERSION_HEADER_LOCATION)
-
 InstallProject(
   NAME "${PROJECT_NAME}"
   VERSION "${PROJECT_VERSION}"
