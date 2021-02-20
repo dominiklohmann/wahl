@@ -1,4 +1,10 @@
 # CMake
+*.dir/
+*.recipe
+*.sln
+*.tlog/
+*.vcxproj
+*.vcxproj.filters
 .ninja_deps
 .ninja_log
 CMakeCache.txt
@@ -9,7 +15,13 @@ cmake_install.cmake
 install_manifest.txt
 
 # Generated Artifacts
-libargs.a
+*.a
+*.dylib
+*.exe
+*.ilk
+*.lib
+*.pdb
+*.so
 example.basic
 example.group
 
