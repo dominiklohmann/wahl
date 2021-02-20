@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - $default-branch
+  pull_request:
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - name: 'macOS'
+            type: 'macos-latest'
+          - name: 'Ubuntu'
+            type: 'ubuntu-latest'
+          - name: 'Windows'
+            type: 'windows-latest'
+        flags:
+          - name: 'Release'
+            cmake:
+              - '-DCMAKE_BUILD_TYPE=Release'
+          - name: 'Debug'
+            cmake:
+              - '-DCMAKE_BUILD_TYPE=Debug'
+
+    name: '${{ matrix.os.name }} ${{ matrix.flags.name }}'
+    runs-on: '${{ matrix.os.type }}'
+
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+
+      - name: 'Configure'
+        run: |
+          cmake -Bbuild ${{ join(matrix.flags.cmake, ' ') }}
+
+      - name: 'Build'
+        run: |
+          cmake --build build --parallel 4
