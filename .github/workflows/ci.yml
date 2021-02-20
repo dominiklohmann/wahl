@@ -42,9 +42,15 @@ jobs:
         run: |
           cmake --build build --parallel 4
 
-      - name: 'Install'
+      - name: 'Install (Ubuntu)'
+        if: ${{ matrix.os.name == 'Ubuntu' }}
         run: |
           sudo cmake --build build --target install
+
+      - name: 'Install (macOS/Windows)'
+        if: ${{ matrix.os.name != 'Ubuntu' }}
+        run: |
+          cmake --build build --target install
 
       - name: 'Build Example: Basic'
         working-directory: examples/basic
