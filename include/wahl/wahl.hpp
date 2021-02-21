@@ -25,9 +25,6 @@
 #include <ciso646>
 #endif
 
-#define WAHL_RETURNS(...)                                                      \
-  ->decltype(__VA_ARGS__) { return (__VA_ARGS__); }
-
 namespace wahl {
 
 template <int N> struct rank : rank<N - 1> {};
@@ -41,7 +38,9 @@ namespace adl_wahl {
 using std::begin;
 using std::end;
 
-template <class T> auto adl_begin(T &&x) WAHL_RETURNS(begin(x));
+template <class T> auto adl_begin(T &&x) -> decltype(begin(x)) {
+  return (begin(x));
+};
 
 template <class T>
 auto is_container(wahl::rank<1>, T &&x)
@@ -122,15 +121,6 @@ template <class Predicate> std::string trim(const std::string &s, Predicate p) {
   return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
 }
 
-#define WAHL_GET_CMD_ATTRIBUTE(name, ...)                                      \
-  namespace detail {                                                           \
-  template <class T>                                                           \
-  auto get_##name##_impl(rank<1>) WAHL_RETURNS(T::name()) template <class T>   \
-  auto get_##name##_impl(rank<0>) WAHL_RETURNS(__VA_ARGS__);                   \
-  }                                                                            \
-  template <class T>                                                           \
-  auto get_##name() WAHL_RETURNS(detail::get_##name##_impl<T>(rank<1>{}));
-
 template <class T> std::string get_command_type_name() {
   auto name = std::string{wahl::internal::type_name<T>()};
   auto i = name.find("::");
@@ -141,9 +131,48 @@ template <class T> std::string get_command_type_name() {
   return trim(name, [](char c) { return c == '_'; });
 }
 
-WAHL_GET_CMD_ATTRIBUTE(name, get_command_type_name<T>());
-WAHL_GET_CMD_ATTRIBUTE(help, "");
-WAHL_GET_CMD_ATTRIBUTE(options_metavar, "[options...]");
+namespace detail {
+template <class T> auto get_name_impl(rank<1>) -> decltype(T ::name()) {
+  return (T ::name());
+}
+template <class T>
+auto get_name_impl(rank<0>) -> decltype(get_command_type_name<T>()) {
+  return (get_command_type_name<T>());
+};
+} // namespace detail
+template <class T>
+auto get_name() -> decltype(detail ::get_name_impl<T>(rank<1>{})) {
+  return (detail ::get_name_impl<T>(rank<1>{}));
+};
+
+namespace detail {
+template <class T> auto get_help_impl(rank<1>) -> decltype(T ::help()) {
+  return (T ::help());
+}
+template <class T> auto get_help_impl(rank<0>) -> decltype("") { return (""); };
+} // namespace detail
+template <class T>
+auto get_help() -> decltype(detail ::get_help_impl<T>(rank<1>{})) {
+  return (detail ::get_help_impl<T>(rank<1>{}));
+};
+
+namespace detail {
+template <class T>
+auto get_options_metavar_impl(rank<1>) -> decltype(T ::options_metavar()) {
+  return (T ::options_metavar());
+}
+template <class T>
+auto get_options_metavar_impl(rank<0>) -> decltype("[options...]") {
+  return ("[options...]");
+};
+
+} // namespace detail
+template <class T>
+auto get_options_metavar()
+    -> decltype(detail ::get_options_metavar_impl<T>(rank<1>{})) {
+  return (detail ::get_options_metavar_impl<T>(rank<1>{}));
+};
+;
 
 template <class T> struct value_parser {
   static T apply(const std::string &x) {
@@ -427,16 +456,18 @@ inline auto count() {
   };
 }
 
-#define WAHL_SET_ARG(name)                                                     \
-  template <class T> auto name(T &&x) {                                        \
-    return [=](auto &&, auto &, argument &a) { a.name = x; };                  \
-  }
+template <class T> auto help(T &&x) {
+  return [=](auto &&, auto &, argument &a) { a.help = x; };
+};
 
-WAHL_SET_ARG(help);
-WAHL_SET_ARG(metavar);
+template <class T> auto metavar(T &&x) {
+  return [=](auto &&, auto &, argument &a) { a.metavar = x; };
+};
 
 template <class T, class F>
-auto try_parse(rank<1>, T &x, F f) WAHL_RETURNS(x.parse(f));
+auto try_parse(rank<1>, T &x, F f) -> decltype(x.parse(f)) {
+  return (x.parse(f));
+};
 
 template <class T, class F> void try_parse(rank<0>, T &, F) {}
 
@@ -491,10 +522,14 @@ template <class Container> auto drop(Container c) {
 }
 
 template <class T, class... Ts>
-auto try_run(rank<2>, T &x, Ts &&...xs) WAHL_RETURNS(x.run(xs...));
+auto try_run(rank<2>, T &x, Ts &&...xs) -> decltype(x.run(xs...)) {
+  return (x.run(xs...));
+};
 
 template <class T, class... Ts>
-auto try_run(rank<1>, T &x, Ts &&...) WAHL_RETURNS(x.run())
+auto try_run(rank<1>, T &x, Ts &&...) -> decltype(x.run()) {
+  return (x.run());
+}
 
     template <class T, class... Ts>
     void parse(T &cmd, std::deque<std::string> a, Ts &&...xs) {
