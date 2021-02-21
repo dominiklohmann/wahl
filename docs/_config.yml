@@ -7,7 +7,9 @@ author:
 remote_theme: pmarsceill/just-the-docs
 color_scheme: dark
 search_enabled: true
-exclude:
-  - 'security.md'
+# These files have a specific meaning for GitHub repositories, so we have to
+# include them explicitly.
+include:
   - 'code_of_conduct.md'
   - 'contributing.md'
+  - 'security.md'

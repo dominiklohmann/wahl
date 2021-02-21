@@ -1,3 +1,8 @@
+---
+title: Security Policy
+permalink: /security-policy
+---
+
 # Security Policies and Procedures
 
 This document outlines security procedures and general policies for this
