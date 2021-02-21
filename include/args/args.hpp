@@ -97,8 +97,8 @@ template <class F, class... Ts> void each_arg(F f, Ts &&...xs) {
 }
 #endif
 
-std::vector<std::string> wrap(const std::string &text,
-                              unsigned int line_length = 72) {
+inline std::vector<std::string> wrap(const std::string &text,
+                                     unsigned int line_length = 72) {
   std::vector<std::string> output;
   std::istringstream iss(text);
 
@@ -209,7 +209,7 @@ void write_value_to(T &result, const std::string &x) {
   result.insert(result.end(), value_parser<typename T::value_type>::apply(x));
 }
 
-void write_value_to(std::nullptr_t, const std::string &) {
+inline void write_value_to(std::nullptr_t, const std::string &) {
   // Do nothing
 }
 
@@ -439,7 +439,7 @@ template <class T> auto show(T text) {
   return action([=] { std::cout << text << std::endl; });
 }
 
-auto required() {
+inline auto required() {
   return [](auto &&, auto &, argument &a) {
     a.required = true;
     a.add_callback([](const argument &arg) {
@@ -456,7 +456,7 @@ template <class T> auto set(T value) {
   };
 }
 
-auto count() {
+inline auto count() {
   return [](auto &&data, auto &, argument &a) {
     a.type = argument_type::none;
     a.add_callback([&data](const argument &arg) { data = arg.count; });
@@ -507,7 +507,7 @@ std::string pop_string(Iterator first, Iterator last) {
     return std::string(first + 1, last);
 }
 
-std::tuple<std::string, std::string>
+inline std::tuple<std::string, std::string>
 parse_attached_value(const std::string &s) {
   assert(s.size() > 0);
   assert(s[0] == '-' && "Not parsing a flag");
