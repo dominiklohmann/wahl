@@ -3,6 +3,7 @@
 #pragma once
 
 #include <wahl/internal/overload.hpp>
+#include <wahl/internal/type_name.hpp>
 
 #include <algorithm>
 #include <deque>
@@ -121,27 +122,6 @@ template <class Predicate> std::string trim(const std::string &s, Predicate p) {
   return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
 }
 
-template <class Args_Probe_TypeName_> const std::string &get_type_name() {
-  static std::string name;
-
-  if (name.empty()) {
-#ifdef _MSC_VER
-    name = typeid(Args_Probe_TypeName_).name();
-    name = name.substr(7);
-#else
-    const char parameter_name[] = "Args_Probe_TypeName_ =";
-    name = __PRETTY_FUNCTION__;
-
-    auto begin = name.find(parameter_name) + sizeof(parameter_name);
-    auto length = name.find_first_of("];", begin) - begin;
-
-    name = name.substr(begin, length);
-#endif
-  }
-
-  return name;
-}
-
 #define WAHL_GET_CMD_ATTRIBUTE(name, ...)                                      \
   namespace detail {                                                           \
   template <class T>                                                           \
@@ -152,7 +132,7 @@ template <class Args_Probe_TypeName_> const std::string &get_type_name() {
   auto get_##name() WAHL_RETURNS(detail::get_##name##_impl<T>(rank<1>{}));
 
 template <class T> std::string get_command_type_name() {
-  std::string name = wahl::get_type_name<T>();
+  auto name = std::string{wahl::internal::type_name<T>()};
   auto i = name.find("::");
   if (i != std::string::npos)
     name = name.substr(i + 2);
