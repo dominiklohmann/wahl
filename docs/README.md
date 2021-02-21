@@ -36,8 +36,6 @@ int main(int argc, const char **argv) {
 }
 ```
 
-
-
 ## Acknowledgements
 
 This project is derived from [pfultz2/args][pfultz2/args], and I want to thank
