@@ -1,7 +1,9 @@
+<!--
 ---
 title: Security Policy
 permalink: /security-policy
 ---
+-->
 
 # Security Policies and Procedures
 

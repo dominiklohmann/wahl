@@ -1,7 +1,9 @@
+<!--
 ---
-title: A type-safe argument parser for modern C++
+title: args
 permalink: /
 ---
+-->
 
 <p align="center">
     <h1 align="center">args</h1>
