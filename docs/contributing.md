@@ -1,9 +1,7 @@
-<!--
 ---
 title: Contributing
 permalink: /contributing
 ---
--->
 
 # Contributing
 

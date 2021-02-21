@@ -1,5 +1,5 @@
-title: 'A type-safe argument parser for modern C++.'
-description: 'args'
+title: 'args'
+description: 'Type-safe argument parser for modern C++'
 author:
   name: 'Dominik Lohmann'
   mail: 'mail@dominiklohmann.de'
