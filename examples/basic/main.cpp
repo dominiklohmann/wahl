@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
-#include <args/args.hpp>
+#include <wahl/wahl.hpp>
 
 struct hello {
   static const char *help() {
@@ -13,9 +13,9 @@ struct hello {
   hello() : count(1) {}
 
   template <class F> void parse(F f) {
-    f(count, "--count", "-C", args::help("Number of greetings."));
-    f(name, "--name", "-N", args::help("The person to greet."),
-      args::required());
+    f(count, "--count", "-C", wahl::help("Number of greetings."));
+    f(name, "--name", "-N", wahl::help("The person to greet."),
+      wahl::required());
   }
 
   void run() {
@@ -24,4 +24,4 @@ struct hello {
   }
 };
 
-int main(int argc, const char **argv) { args::parse<hello>(argc, argv); }
+int main(int argc, const char **argv) { wahl::parse<hello>(argc, argv); }

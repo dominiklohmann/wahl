@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: BSL-1.0
 
-#include <args/args.hpp>
+#include <wahl/wahl.hpp>
 #include <doctest/doctest.h>
 
-struct cli : args::group<cli> {
+struct cli : wahl::group<cli> {
   std::string name = "";
 };
 
@@ -30,17 +30,17 @@ TEST_CASE("command groups") {
   REQUIRE_EQ(cmd.name, "");
 
   SUBCASE("command with automatic name") {
-    args::parse(cmd, {"init"});
+    wahl::parse(cmd, {"init"});
     CHECK_EQ(cmd.name, "init");
   }
 
   SUBCASE("command with manual name") {
-    args::parse(cmd, {"run"});
+    wahl::parse(cmd, {"run"});
     CHECK_EQ(cmd.name, "run");
   }
 
   SUBCASE("command with automatic name with trailing underscore") {
-    args::parse(cmd, {"delete"});
+    wahl::parse(cmd, {"delete"});
     CHECK_EQ(cmd.name, "delete");
   }
 }

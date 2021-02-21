@@ -13,7 +13,7 @@ CTestTestfile.cmake
 DartConfiguration.tcl
 Makefile
 Testing/
-args_tests_*.cmake
+wahl_tests_*.cmake
 build*.ninja
 cmake_install.cmake
 doctestConfig.cmake
@@ -28,7 +28,7 @@ install_manifest.txt
 *.lib
 *.pdb
 *.so
-args_tests
+wahl_tests
 example.basic
 example.group
 
