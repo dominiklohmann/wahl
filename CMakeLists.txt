@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14...3.19 FATAL_ERROR)
 
 project(
-  args
+  wahl
   DESCRIPTION "A type-safe argument parser for modern C++."
   VERSION 0.1
   LANGUAGES CXX)
@@ -19,18 +19,18 @@ file(GLOB_RECURSE sources CONFIGURE_DEPENDS
      "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
 
 # Create a library target.
-add_library(args ${sources})
+add_library(wahl ${sources})
 
-# Building args (and linking against it) requires C++17.
-target_compile_features(args PUBLIC cxx_std_17)
+# Building wahl (and linking against it) requires C++17.
+target_compile_features(wahl PUBLIC cxx_std_17)
 
 # Enforce standard compliance for MSVC.
-target_compile_options(args
+target_compile_options(wahl
   PUBLIC
     "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive>")
 
 # Set the include directory properly.
-target_include_directories(args
+target_include_directories(wahl
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>)

@@ -22,47 +22,47 @@
 #include <ciso646>
 #endif
 
-#define ARGS_RETURNS(...)                                                      \
+#define WAHL_RETURNS(...)                                                      \
   ->decltype(__VA_ARGS__) { return (__VA_ARGS__); }
 
-namespace args {
+namespace wahl {
 
 template <int N> struct rank : rank<N - 1> {};
 
 template <> struct rank<0> {};
 
-} // namespace args
+} // namespace wahl
 
-namespace adl_args {
+namespace adl_wahl {
 
 using std::begin;
 using std::end;
 
-template <class T> auto adl_begin(T &&x) ARGS_RETURNS(begin(x));
+template <class T> auto adl_begin(T &&x) WAHL_RETURNS(begin(x));
 
 template <class T>
-auto is_container(args::rank<1>, T &&x)
+auto is_container(wahl::rank<1>, T &&x)
     -> decltype(x.insert(end(x), *begin(x)), std::true_type{}) {
   return {};
 }
 
-template <class T> std::false_type is_container(args::rank<0>, T &&) {
+template <class T> std::false_type is_container(wahl::rank<0>, T &&) {
   return {};
 }
 
-} // namespace adl_args
+} // namespace adl_wahl
 
-namespace args {
+namespace wahl {
 
 template <class T>
 struct is_container
-    : decltype(adl_args::is_container(args::rank<1>{}, std::declval<T>())) {};
+    : decltype(adl_wahl::is_container(wahl::rank<1>{}, std::declval<T>())) {};
 
 template <> struct is_container<std::string> : std::false_type {};
 
 template <class Range>
 using value_of =
-    std::decay_t<decltype(*adl_args::adl_begin(std::declval<Range>()))>;
+    std::decay_t<decltype(*adl_wahl::adl_begin(std::declval<Range>()))>;
 
 template <class F1, class... Fs> struct overload_set;
 
@@ -89,7 +89,7 @@ template <class F> void each_arg(F) {}
 #ifdef __clang__
 template <class F, class T, class... Ts> void each_arg(F f, T &&x, Ts &&...xs) {
   f(std::forward<T>(x));
-  args::each_arg(f, std::forward<Ts>(xs)...);
+  wahl::each_arg(f, std::forward<Ts>(xs)...);
 }
 #else
 template <class F, class... Ts> void each_arg(F f, Ts &&...xs) {
@@ -160,17 +160,17 @@ template <class Args_Probe_TypeName_> const std::string &get_type_name() {
   return name;
 }
 
-#define ARGS_GET_CMD_ATTRIBUTE(name, ...)                                      \
+#define WAHL_GET_CMD_ATTRIBUTE(name, ...)                                      \
   namespace detail {                                                           \
   template <class T>                                                           \
-  auto get_##name##_impl(rank<1>) ARGS_RETURNS(T::name()) template <class T>   \
-  auto get_##name##_impl(rank<0>) ARGS_RETURNS(__VA_ARGS__);                   \
+  auto get_##name##_impl(rank<1>) WAHL_RETURNS(T::name()) template <class T>   \
+  auto get_##name##_impl(rank<0>) WAHL_RETURNS(__VA_ARGS__);                   \
   }                                                                            \
   template <class T>                                                           \
-  auto get_##name() ARGS_RETURNS(detail::get_##name##_impl<T>(rank<1>{}));
+  auto get_##name() WAHL_RETURNS(detail::get_##name##_impl<T>(rank<1>{}));
 
 template <class T> std::string get_command_type_name() {
-  std::string name = args::get_type_name<T>();
+  std::string name = wahl::get_type_name<T>();
   auto i = name.find("::");
   if (i != std::string::npos)
     name = name.substr(i + 2);
@@ -179,9 +179,9 @@ template <class T> std::string get_command_type_name() {
   return trim(name, [](char c) { return c == '_'; });
 }
 
-ARGS_GET_CMD_ATTRIBUTE(name, get_command_type_name<T>());
-ARGS_GET_CMD_ATTRIBUTE(help, "");
-ARGS_GET_CMD_ATTRIBUTE(options_metavar, "[options...]");
+WAHL_GET_CMD_ATTRIBUTE(name, get_command_type_name<T>());
+WAHL_GET_CMD_ATTRIBUTE(help, "");
+WAHL_GET_CMD_ATTRIBUTE(options_metavar, "[options...]");
 
 template <class T> struct value_parser {
   static T apply(const std::string &x) {
@@ -242,11 +242,11 @@ auto type_to_help_impl(rank<1>) ->
     typename std::enable_if<(is_container<T>() and
                              not std::is_convertible<T, std::string>()),
                             std::string>::type {
-  return args::type_to_help_impl<value_of<T>>(rank<1>{}) + "...";
+  return wahl::type_to_help_impl<value_of<T>>(rank<1>{}) + "...";
 }
 
 template <class T> std::string type_to_help(const T &) {
-  return "[" + args::type_to_help_impl<T>(rank<1>{}) + "]";
+  return "[" + wahl::type_to_help_impl<T>(rank<1>{}) + "]";
 }
 
 struct argument {
@@ -317,12 +317,12 @@ template <class... Args> struct context {
   template <class T, class... Ts> void parse(T &&x, Ts &&...xs) {
     argument arg;
     arg.write_value = [&x](const std::string &s) {
-      args::write_value_to(x, s);
+      wahl::write_value_to(x, s);
     };
-    arg.type = args::get_argument_type(x);
-    arg.metavar = args::type_to_help(x);
-    args::each_arg(
-        args::overload(
+    arg.type = wahl::get_argument_type(x);
+    arg.metavar = wahl::type_to_help(x);
+    wahl::each_arg(
+        wahl::overload(
             [&](const std::string &name) { arg.flags.push_back(name); },
             [&, this](auto &&attribute) -> decltype(attribute(x, *this, arg),
                                                     void()) {
@@ -352,7 +352,7 @@ template <class... Args> struct context {
 
   void show_help_col(std::string item, std::string help, int width,
                      int total_width) const {
-    auto txt = args::wrap(help, total_width - width - 2);
+    auto txt = wahl::wrap(help, total_width - width - 2);
     assert(!txt.empty());
     std::cout << " " << std::setw(width) << item << " " << txt[0] << std::endl;
     std::for_each(txt.begin() + 1, txt.end(), [&](std::string line) {
@@ -382,7 +382,7 @@ template <class... Args> struct context {
 
     std::cout << std::endl;
     std::cout << std::endl;
-    for (auto line : args::wrap(description, total_width - 2))
+    for (auto line : wahl::wrap(description, total_width - 2))
       std::cout << "  " << line << std::endl;
     std::cout << std::endl;
     std::cout << "Options: " << std::endl << std::endl;
@@ -432,7 +432,7 @@ template <class F> auto lazy_callback(F f) {
 }
 
 template <class F> auto action(F f) {
-  return args::eager_callback(std::bind(f));
+  return wahl::eager_callback(std::bind(f));
 }
 
 template <class T> auto show(T text) {
@@ -464,16 +464,16 @@ inline auto count() {
   };
 }
 
-#define ARGS_SET_ARG(name)                                                     \
+#define WAHL_SET_ARG(name)                                                     \
   template <class T> auto name(T &&x) {                                        \
     return [=](auto &&, auto &, argument &a) { a.name = x; };                  \
   }
 
-ARGS_SET_ARG(help);
-ARGS_SET_ARG(metavar);
+WAHL_SET_ARG(help);
+WAHL_SET_ARG(metavar);
 
 template <class T, class F>
-auto try_parse(rank<1>, T &x, F f) ARGS_RETURNS(x.parse(f));
+auto try_parse(rank<1>, T &x, F f) WAHL_RETURNS(x.parse(f));
 
 template <class T, class F> void try_parse(rank<0>, T &, F) {}
 
@@ -487,13 +487,13 @@ template <class C, class T> void assign_subcommands(rank<0>, C &, T &) {}
 
 template <class... Ts, class T> context<T &, Ts...> build_context(T &cmd) {
   context<T &, Ts...> ctx;
-  args::assign_subcommands(rank<1>{}, ctx, cmd);
+  wahl::assign_subcommands(rank<1>{}, ctx, cmd);
   ctx.parse(
-      nullptr, "-h", "--help", args::help("Show help"),
-      args::eager_callback([](std::nullptr_t, const auto &c, const argument &) {
+      nullptr, "-h", "--help", wahl::help("Show help"),
+      wahl::eager_callback([](std::nullptr_t, const auto &c, const argument &) {
         c.show_help(get_name<T>(), get_help<T>(), get_options_metavar<T>());
       }));
-  args::try_parse(rank<1>{}, cmd, [&](auto &&...xs) {
+  wahl::try_parse(rank<1>{}, cmd, [&](auto &&...xs) {
     ctx.parse(std::forward<decltype(xs)>(xs)...);
   });
   return ctx;
@@ -514,7 +514,7 @@ parse_attached_value(const std::string &s) {
   if (s[1] == '-') {
     auto it = std::find(s.begin(), s.end(), '=');
     return std::make_tuple(std::string(s.begin(), it),
-                           args::pop_string(it, s.end()));
+                           wahl::pop_string(it, s.end()));
   } else if (s.size() > 2) {
     return std::make_tuple(s.substr(0, 2), s.substr(2));
   } else {
@@ -528,14 +528,14 @@ template <class Container> auto drop(Container c) {
 }
 
 template <class T, class... Ts>
-auto try_run(rank<2>, T &x, Ts &&...xs) ARGS_RETURNS(x.run(xs...));
+auto try_run(rank<2>, T &x, Ts &&...xs) WAHL_RETURNS(x.run(xs...));
 
 template <class T, class... Ts>
-auto try_run(rank<1>, T &x, Ts &&...) ARGS_RETURNS(x.run())
+auto try_run(rank<1>, T &x, Ts &&...) WAHL_RETURNS(x.run())
 
     template <class T, class... Ts>
     void parse(T &cmd, std::deque<std::string> a, Ts &&...xs) {
-  auto ctx = args::build_context<Ts...>(cmd);
+  auto ctx = wahl::build_context<Ts...>(cmd);
 
   bool capture = false;
   std::string core;
@@ -547,7 +547,7 @@ auto try_run(rank<1>, T &x, Ts &&...) ARGS_RETURNS(x.run())
     if (x[0] == '-') {
       capture = false;
       std::string value;
-      std::tie(core, value) = args::parse_attached_value(x);
+      std::tie(core, value) = wahl::parse_attached_value(x);
 
       if (ctx[core].type == argument_type::none) {
         if (ctx[core].write(""))
@@ -584,21 +584,21 @@ auto try_run(rank<1>, T &x, Ts &&...) ARGS_RETURNS(x.run())
   }
   ctx.post_process();
 
-  args::try_run(rank<2>{}, cmd, xs...);
+  wahl::try_run(rank<2>{}, cmd, xs...);
 }
 
 template <class T, class... Ts>
 void parse(std::deque<std::string> a, Ts &&...xs) {
   T cmd = {};
 
-  args::parse(cmd, std::move(a), xs...);
+  wahl::parse(cmd, std::move(a), xs...);
 }
 
 template <class T> bool parse(int argc, char const *argv[]) {
   std::deque<std::string> as(argv + 1, argv + argc);
 
   try {
-    args::parse<T>(as);
+    wahl::parse<T>(as);
   } catch (const std::exception &ex) {
     std::cerr << "Error: " << ex.what() << std::endl;
     return false;
@@ -633,7 +633,7 @@ template <class Derived> struct group {
 
   template <class T> static void add_command() {
     subcommand_type sub;
-    sub.run = [](auto a, auto &&...xs) { args::parse<T>(a, xs...); };
+    sub.run = [](auto a, auto &&...xs) { wahl::parse<T>(a, xs...); };
     sub.help = get_help<T>();
     subcommands().emplace(get_name<T>(), sub);
   }
@@ -648,4 +648,4 @@ template <class Derived> struct group {
   void run() {}
 };
 
-} // namespace args
+} // namespace wahl
