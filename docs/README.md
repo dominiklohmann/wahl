@@ -1,8 +1,3 @@
----
-title: A type-safe argument parser for modern C++
-permalink: /
----
-
 <p align="center">
     <h1 align="center">args</h1>
     <p align="center">A type-safe argument parser for modern C++.</p>
