@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <wahl/internal/overload.hpp>
+
 #include <algorithm>
 #include <deque>
 #include <functional>
@@ -63,26 +65,6 @@ template <> struct is_container<std::string> : std::false_type {};
 template <class Range>
 using value_of =
     std::decay_t<decltype(*adl_wahl::adl_begin(std::declval<Range>()))>;
-
-template <class F1, class... Fs> struct overload_set;
-
-template <class F1, class F2, class... Fs>
-struct overload_set<F1, F2, Fs...> : F1, overload_set<F2, Fs...> {
-  using F1::operator();
-  using overload_set<F2, Fs...>::operator();
-  overload_set(F1 f1, F2 f2, Fs... fs)
-      : F1(std::move(f1)), overload_set<F2, Fs...>(std::move(f2),
-                                                   std::move(fs)...) {}
-};
-
-template <class F1> struct overload_set<F1> : F1 {
-  using F1::operator();
-  overload_set(F1 f1) : F1(std::move(f1)) {}
-};
-
-template <class... Fs> overload_set<Fs...> overload(Fs... fs) {
-  return {std::move(fs)...};
-}
 
 template <class F> void each_arg(F) {}
 
@@ -322,12 +304,13 @@ template <class... Args> struct context {
     arg.type = wahl::get_argument_type(x);
     arg.metavar = wahl::type_to_help(x);
     wahl::each_arg(
-        wahl::overload(
+        wahl::internal::overload{
             [&](const std::string &name) { arg.flags.push_back(name); },
             [&, this](auto &&attribute) -> decltype(attribute(x, *this, arg),
                                                     void()) {
               attribute(x, *this, arg);
-            }),
+            },
+        },
         std::forward<Ts>(xs)...);
     this->add(std::move(arg));
   }
