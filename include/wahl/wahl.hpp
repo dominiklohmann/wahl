@@ -5,6 +5,7 @@
 #include <wahl/internal/overload.hpp>
 #include <wahl/internal/rank.hpp>
 #include <wahl/internal/type_name.hpp>
+#include <wahl/internal/type_traits.hpp>
 
 #include <algorithm>
 #include <deque>
@@ -26,38 +27,7 @@
 #include <ciso646>
 #endif
 
-namespace adl_wahl {
-
-using std::begin;
-using std::end;
-
-template <class T> auto adl_begin(T &&x) -> decltype(begin(x)) {
-  return (begin(x));
-};
-
-template <class T>
-auto is_container(wahl::internal::rank<1>, T &&x)
-    -> decltype(x.insert(end(x), *begin(x)), std::true_type{}) {
-  return {};
-}
-
-template <class T> std::false_type is_container(wahl::internal::rank<0>, T &&) {
-  return {};
-}
-
-} // namespace adl_wahl
-
 namespace wahl {
-
-template <class T>
-struct is_container : decltype(adl_wahl::is_container(wahl::internal::rank<1>{},
-                                                      std::declval<T>())) {};
-
-template <> struct is_container<std::string> : std::false_type {};
-
-template <class Range>
-using value_of =
-    std::decay_t<decltype(*adl_wahl::adl_begin(std::declval<Range>()))>;
 
 template <class F> void each_arg(F) {}
 
@@ -188,7 +158,7 @@ template <class T> struct value_parser {
 };
 
 template <class T,
-          typename std::enable_if<(not is_container<T>{} or
+          typename std::enable_if<(not internal::is_container_v<T> or
                                    std::is_convertible<T, std::string>{}),
                                   int>::type = 0>
 void write_value_to(T &result, const std::string &x) {
@@ -196,7 +166,7 @@ void write_value_to(T &result, const std::string &x) {
 }
 
 template <class T,
-          typename std::enable_if<(is_container<T>{} and
+          typename std::enable_if<(internal::is_container_v<T> and
                                    not std::is_convertible<T, std::string>{}),
                                   int>::type = 0>
 void write_value_to(T &result, const std::string &x) {
@@ -212,7 +182,7 @@ enum class argument_type { none, single, multiple };
 template <class T> argument_type get_argument_type(const T &) {
   if (std::is_same<T, bool>() or std::is_same<T, std::nullptr_t>())
     return argument_type::none;
-  else if (is_container<T>())
+  else if (internal::is_container_v<T>)
     return argument_type::multiple;
   else
     return argument_type::single;
@@ -233,10 +203,11 @@ template <class T> std::string type_to_help_impl(internal::rank<0>) {
 
 template <class T>
 auto type_to_help_impl(internal::rank<1>) ->
-    typename std::enable_if<(is_container<T>() and
+    typename std::enable_if<(internal::is_container_v<T> and
                              not std::is_convertible<T, std::string>()),
                             std::string>::type {
-  return wahl::type_to_help_impl<value_of<T>>(internal::rank<1>{}) + "...";
+  return wahl::type_to_help_impl<typename T::value_type>(internal::rank<1>{}) +
+         "...";
 }
 
 template <class T> std::string type_to_help(const T &) {
