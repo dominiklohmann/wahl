@@ -4,6 +4,7 @@
 
 #include <wahl/internal/overload.hpp>
 #include <wahl/internal/rank.hpp>
+#include <wahl/internal/try_parse.hpp>
 #include <wahl/internal/type_name.hpp>
 #include <wahl/internal/type_traits.hpp>
 
@@ -441,13 +442,6 @@ template <class T> auto metavar(T &&x) {
   return [=](auto &&, auto &, argument &a) { a.metavar = x; };
 };
 
-template <class T, class F>
-auto try_parse(internal::rank<1>, T &x, F f) -> decltype(x.parse(f)) {
-  return (x.parse(f));
-};
-
-template <class T, class F> void try_parse(internal::rank<0>, T &, F) {}
-
 template <class C, class T>
 auto assign_subcommands(internal::rank<1>, C &ctx, T &)
     -> decltype(T::subcommands, void()) {
@@ -465,9 +459,8 @@ template <class... Ts, class T> context<T &, Ts...> build_context(T &cmd) {
       wahl::eager_callback([](std::nullptr_t, const auto &c, const argument &) {
         c.show_help(get_name<T>(), get_help<T>(), get_options_metavar<T>());
       }));
-  wahl::try_parse(internal::rank_v<1>, cmd, [&](auto &&...xs) {
-    ctx.parse(std::forward<decltype(xs)>(xs)...);
-  });
+  wahl::internal::try_parse(
+      cmd, [&](auto &&...xs) { ctx.parse(std::forward<decltype(xs)>(xs)...); });
   return ctx;
 }
 
