@@ -3,6 +3,7 @@
 #pragma once
 
 #include <wahl/internal/overload.hpp>
+#include <wahl/internal/rank.hpp>
 #include <wahl/internal/type_name.hpp>
 
 #include <algorithm>
@@ -25,14 +26,6 @@
 #include <ciso646>
 #endif
 
-namespace wahl {
-
-template <int N> struct rank : rank<N - 1> {};
-
-template <> struct rank<0> {};
-
-} // namespace wahl
-
 namespace adl_wahl {
 
 using std::begin;
@@ -43,12 +36,12 @@ template <class T> auto adl_begin(T &&x) -> decltype(begin(x)) {
 };
 
 template <class T>
-auto is_container(wahl::rank<1>, T &&x)
+auto is_container(wahl::internal::rank<1>, T &&x)
     -> decltype(x.insert(end(x), *begin(x)), std::true_type{}) {
   return {};
 }
 
-template <class T> std::false_type is_container(wahl::rank<0>, T &&) {
+template <class T> std::false_type is_container(wahl::internal::rank<0>, T &&) {
   return {};
 }
 
@@ -57,8 +50,8 @@ template <class T> std::false_type is_container(wahl::rank<0>, T &&) {
 namespace wahl {
 
 template <class T>
-struct is_container
-    : decltype(adl_wahl::is_container(wahl::rank<1>{}, std::declval<T>())) {};
+struct is_container : decltype(adl_wahl::is_container(wahl::internal::rank<1>{},
+                                                      std::declval<T>())) {};
 
 template <> struct is_container<std::string> : std::false_type {};
 
@@ -131,48 +124,58 @@ template <class T> std::string get_command_type_name() {
   return trim(name, [](char c) { return c == '_'; });
 }
 
-namespace detail {
-template <class T> auto get_name_impl(rank<1>) -> decltype(T ::name()) {
-  return (T ::name());
+namespace internal {
+
+template <class T> auto get_name_impl(rank<1>) -> decltype(T::name()) {
+  return (T::name());
 }
+
 template <class T>
 auto get_name_impl(rank<0>) -> decltype(get_command_type_name<T>()) {
   return (get_command_type_name<T>());
 };
-} // namespace detail
+
+} // namespace internal
+
 template <class T>
-auto get_name() -> decltype(detail ::get_name_impl<T>(rank<1>{})) {
-  return (detail ::get_name_impl<T>(rank<1>{}));
+auto get_name() -> decltype(internal::get_name_impl<T>(internal::rank<1>{})) {
+  return (internal::get_name_impl<T>(internal::rank<1>{}));
 };
 
-namespace detail {
-template <class T> auto get_help_impl(rank<1>) -> decltype(T ::help()) {
-  return (T ::help());
+namespace internal {
+
+template <class T> auto get_help_impl(rank<1>) -> decltype(T::help()) {
+  return (T::help());
 }
+
 template <class T> auto get_help_impl(rank<0>) -> decltype("") { return (""); };
-} // namespace detail
+
+} // namespace internal
+
 template <class T>
-auto get_help() -> decltype(detail ::get_help_impl<T>(rank<1>{})) {
-  return (detail ::get_help_impl<T>(rank<1>{}));
+auto get_help() -> decltype(internal::get_help_impl<T>(internal::rank<1>{})) {
+  return (internal::get_help_impl<T>(internal::rank<1>{}));
 };
 
-namespace detail {
+namespace internal {
+
 template <class T>
-auto get_options_metavar_impl(rank<1>) -> decltype(T ::options_metavar()) {
-  return (T ::options_metavar());
+auto get_options_metavar_impl(rank<1>) -> decltype(T::options_metavar()) {
+  return (T::options_metavar());
 }
+
 template <class T>
 auto get_options_metavar_impl(rank<0>) -> decltype("[options...]") {
   return ("[options...]");
 };
 
-} // namespace detail
+} // namespace internal
+
 template <class T>
 auto get_options_metavar()
-    -> decltype(detail ::get_options_metavar_impl<T>(rank<1>{})) {
-  return (detail ::get_options_metavar_impl<T>(rank<1>{}));
+    -> decltype(internal::get_options_metavar_impl<T>(internal::rank<1>{})) {
+  return (internal::get_options_metavar_impl<T>(internal::rank<1>{}));
 };
-;
 
 template <class T> struct value_parser {
   static T apply(const std::string &x) {
@@ -215,7 +218,7 @@ template <class T> argument_type get_argument_type(const T &) {
     return argument_type::single;
 }
 
-template <class T> std::string type_to_help_impl(rank<0>) {
+template <class T> std::string type_to_help_impl(internal::rank<0>) {
   if (std::is_same<T, bool>())
     return "bool";
   else if (std::is_convertible<T, std::string>())
@@ -229,15 +232,15 @@ template <class T> std::string type_to_help_impl(rank<0>) {
 }
 
 template <class T>
-auto type_to_help_impl(rank<1>) ->
+auto type_to_help_impl(internal::rank<1>) ->
     typename std::enable_if<(is_container<T>() and
                              not std::is_convertible<T, std::string>()),
                             std::string>::type {
-  return wahl::type_to_help_impl<value_of<T>>(rank<1>{}) + "...";
+  return wahl::type_to_help_impl<value_of<T>>(internal::rank<1>{}) + "...";
 }
 
 template <class T> std::string type_to_help(const T &) {
-  return "[" + wahl::type_to_help_impl<T>(rank<1>{}) + "]";
+  return "[" + wahl::type_to_help_impl<T>(internal::rank<1>{}) + "]";
 }
 
 struct argument {
@@ -465,29 +468,30 @@ template <class T> auto metavar(T &&x) {
 };
 
 template <class T, class F>
-auto try_parse(rank<1>, T &x, F f) -> decltype(x.parse(f)) {
+auto try_parse(internal::rank<1>, T &x, F f) -> decltype(x.parse(f)) {
   return (x.parse(f));
 };
 
-template <class T, class F> void try_parse(rank<0>, T &, F) {}
+template <class T, class F> void try_parse(internal::rank<0>, T &, F) {}
 
 template <class C, class T>
-auto assign_subcommands(rank<1>, C &ctx, T &)
+auto assign_subcommands(internal::rank<1>, C &ctx, T &)
     -> decltype(T::subcommands, void()) {
   ctx.subcommands = T::subcommands();
 }
 
-template <class C, class T> void assign_subcommands(rank<0>, C &, T &) {}
+template <class C, class T>
+void assign_subcommands(internal::rank<0>, C &, T &) {}
 
 template <class... Ts, class T> context<T &, Ts...> build_context(T &cmd) {
   context<T &, Ts...> ctx;
-  wahl::assign_subcommands(rank<1>{}, ctx, cmd);
+  wahl::assign_subcommands(internal::rank<1>{}, ctx, cmd);
   ctx.parse(
       nullptr, "-h", "--help", wahl::help("Show help"),
       wahl::eager_callback([](std::nullptr_t, const auto &c, const argument &) {
         c.show_help(get_name<T>(), get_help<T>(), get_options_metavar<T>());
       }));
-  wahl::try_parse(rank<1>{}, cmd, [&](auto &&...xs) {
+  wahl::try_parse(internal::rank<1>{}, cmd, [&](auto &&...xs) {
     ctx.parse(std::forward<decltype(xs)>(xs)...);
   });
   return ctx;
@@ -522,17 +526,17 @@ template <class Container> auto drop(Container c) {
 }
 
 template <class T, class... Ts>
-auto try_run(rank<2>, T &x, Ts &&...xs) -> decltype(x.run(xs...)) {
+auto try_run(internal::rank<2>, T &x, Ts &&...xs) -> decltype(x.run(xs...)) {
   return (x.run(xs...));
 };
 
 template <class T, class... Ts>
-auto try_run(rank<1>, T &x, Ts &&...) -> decltype(x.run()) {
+auto try_run(internal::rank<1>, T &x, Ts &&...) -> decltype(x.run()) {
   return (x.run());
 }
 
-    template <class T, class... Ts>
-    void parse(T &cmd, std::deque<std::string> a, Ts &&...xs) {
+template <class T, class... Ts>
+void parse(T &cmd, std::deque<std::string> a, Ts &&...xs) {
   auto ctx = wahl::build_context<Ts...>(cmd);
 
   bool capture = false;
@@ -582,7 +586,7 @@ auto try_run(rank<1>, T &x, Ts &&...) -> decltype(x.run()) {
   }
   ctx.post_process();
 
-  wahl::try_run(rank<2>{}, cmd, xs...);
+  wahl::try_run(internal::rank<2>{}, cmd, xs...);
 }
 
 template <class T, class... Ts>
