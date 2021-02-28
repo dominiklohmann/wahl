@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <experimental/type_traits>
-#include <iterator>
+#include <wahl/internal/is_detected.hpp>
+
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -29,10 +29,10 @@ struct is_container_disabled<std::basic_string_view<CharT, Traits>>
     : std::true_type {};
 
 template <class T>
-struct is_container<T, std::enable_if_t<std::conjunction_v<
-                           std::experimental::is_detected<std_data_t, T>,
-                           std::experimental::is_detected<std_size_t, T>,
-                           std::negation<is_container_disabled<T>>>>>
+struct is_container<T,
+                    std::enable_if_t<std::conjunction_v<
+                        is_detected<std_data_t, T>, is_detected<std_size_t, T>,
+                        std::negation<is_container_disabled<T>>>>>
     : std::true_type {};
 
 template <class T>

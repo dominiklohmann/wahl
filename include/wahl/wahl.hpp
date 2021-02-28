@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include <wahl/internal/is_container.hpp>
 #include <wahl/internal/overload.hpp>
 #include <wahl/internal/rank.hpp>
 #include <wahl/internal/try_parse.hpp>
 #include <wahl/internal/type_name.hpp>
-#include <wahl/internal/type_traits.hpp>
 
 #include <algorithm>
 #include <deque>
