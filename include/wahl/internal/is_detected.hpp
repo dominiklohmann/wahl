@@ -25,6 +25,14 @@ namespace wahl::internal {
 
 namespace detail {
 
+#if defined(_MSC_VER)
+template <typename... Ts> struct void_t_impl { using type = void; };
+template <typename... Ts>
+using void_t = typename detail::void_t_impl<Ts...>::type;
+#else
+using std::void_t;
+#endif
+
 template <class Default, class AlwaysVoid, template <class...> class Op,
           class... Args>
 struct detector {
@@ -33,7 +41,7 @@ struct detector {
 };
 
 template <class Default, template <class...> class Op, class... Args>
-struct detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
+struct detector<Default, void_t<Op<Args...>>, Op, Args...> {
   using value_t = std::true_type;
   using type = Op<Args...>;
 };
