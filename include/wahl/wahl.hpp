@@ -8,6 +8,7 @@
 #include <wahl/internal/rank.hpp>
 #include <wahl/internal/try_help.hpp>
 #include <wahl/internal/try_name.hpp>
+#include <wahl/internal/try_options_metavar.hpp>
 #include <wahl/internal/try_parse.hpp>
 #include <wahl/internal/type_name.hpp>
 #include <wahl/version.hpp>
@@ -47,26 +48,6 @@ template <class Range> std::string join(Range &&r, std::string delim) {
                            return x + delim + y;
                          });
 }
-
-namespace internal {
-
-template <class T>
-auto get_options_metavar_impl(rank<1>) -> decltype(T::options_metavar()) {
-  return (T::options_metavar());
-}
-
-template <class T>
-auto get_options_metavar_impl(rank<0>) -> decltype("[options...]") {
-  return ("[options...]");
-};
-
-} // namespace internal
-
-template <class T>
-auto get_options_metavar()
-    -> decltype(internal::get_options_metavar_impl<T>(internal::rank_v<1>)) {
-  return (internal::get_options_metavar_impl<T>(internal::rank_v<1>));
-};
 
 template <class T> struct value_parser {
   static T apply(const std::string &x) {
@@ -379,7 +360,7 @@ template <class... Ts, class T> context<T &, Ts...> build_context(T &cmd) {
       nullptr, "-h", "--help", wahl::help("Show help"),
       wahl::eager_callback([](std::nullptr_t, const auto &c, const argument &) {
         c.show_help(internal::try_name<T>(), internal::try_help<T>(),
-                    get_options_metavar<T>());
+                    internal::try_options_metavar<T>());
       }));
   wahl::internal::try_parse(
       cmd, [&](auto &&...xs) { ctx.parse(std::forward<decltype(xs)>(xs)...); });
