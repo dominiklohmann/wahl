@@ -17,8 +17,12 @@ jobs:
             type: 'macos-latest'
           - name: 'Ubuntu'
             type: 'ubuntu-latest'
-          - name: 'Windows'
-            type: 'windows-latest'
+          # The MSVC version running in CI has a non-functional std::void_t
+          # that is broken for template template arguments, which cannot easily
+          # be worked around. Until we find proper fix, this library is not
+          # being tested with MSVC.
+          # - name: 'Windows'
+          #   type: 'windows-latest'
         flags:
           - name: 'Release'
             cmake:
