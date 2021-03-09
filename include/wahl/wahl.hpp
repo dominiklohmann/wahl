@@ -6,6 +6,7 @@
 #include <wahl/internal/is_container.hpp>
 #include <wahl/internal/overload.hpp>
 #include <wahl/internal/rank.hpp>
+#include <wahl/internal/try_name.hpp>
 #include <wahl/internal/try_parse.hpp>
 #include <wahl/internal/type_name.hpp>
 
@@ -44,40 +45,6 @@ template <class Range> std::string join(Range &&r, std::string delim) {
                            return x + delim + y;
                          });
 }
-
-template <class Predicate> std::string trim(const std::string &s, Predicate p) {
-  auto wsfront = std::find_if_not(s.begin(), s.end(), p);
-  auto wsback = std::find_if_not(s.rbegin(), s.rend(), p).base();
-  return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
-}
-
-template <class T> std::string get_command_type_name() {
-  auto name = std::string{wahl::internal::type_name<T>()};
-  auto i = name.find("::");
-  if (i != std::string::npos)
-    name = name.substr(i + 2);
-  if (name.back() == '&')
-    name.pop_back();
-  return trim(name, [](char c) { return c == '_'; });
-}
-
-namespace internal {
-
-template <class T> auto get_name_impl(rank<1>) -> decltype(T::name()) {
-  return (T::name());
-}
-
-template <class T>
-auto get_name_impl(rank<0>) -> decltype(get_command_type_name<T>()) {
-  return (get_command_type_name<T>());
-};
-
-} // namespace internal
-
-template <class T>
-auto get_name() -> decltype(internal::get_name_impl<T>(internal::rank_v<1>)) {
-  return (internal::get_name_impl<T>(internal::rank_v<1>));
-};
 
 namespace internal {
 
@@ -224,7 +191,9 @@ template <class... Args> struct subcommand {
   std::function<void(std::deque<std::string>, Args...)> run;
 };
 
-template <class T, class... Args> auto current_name() { return get_name<T>(); }
+template <class T, class... Args> auto current_name() {
+  return internal::try_name<T>();
+}
 
 template <class... Args> struct context {
   using subcommand_type = subcommand<Args...>;
@@ -422,7 +391,8 @@ template <class... Ts, class T> context<T &, Ts...> build_context(T &cmd) {
   ctx.parse(
       nullptr, "-h", "--help", wahl::help("Show help"),
       wahl::eager_callback([](std::nullptr_t, const auto &c, const argument &) {
-        c.show_help(get_name<T>(), get_help<T>(), get_options_metavar<T>());
+        c.show_help(internal::try_name<T>(), get_help<T>(),
+                    get_options_metavar<T>());
       }));
   wahl::internal::try_parse(
       cmd, [&](auto &&...xs) { ctx.parse(std::forward<decltype(xs)>(xs)...); });
@@ -565,7 +535,7 @@ template <class Derived> struct group {
     subcommand_type sub;
     sub.run = [](auto a, auto &&...xs) { wahl::parse<T>(a, xs...); };
     sub.help = get_help<T>();
-    subcommands().emplace(get_name<T>(), sub);
+    subcommands().emplace(internal::try_name<T>(), sub);
   }
 
   struct auto_register_command {
