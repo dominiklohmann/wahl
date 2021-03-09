@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <wahl/internal/each_arg.hpp>
 #include <wahl/internal/is_container.hpp>
 #include <wahl/internal/overload.hpp>
 #include <wahl/internal/rank.hpp>
@@ -29,20 +30,6 @@
 #endif
 
 namespace wahl {
-
-template <class F> void each_arg(F) {}
-
-#ifdef __clang__
-template <class F, class T, class... Ts> void each_arg(F f, T &&x, Ts &&...xs) {
-  f(std::forward<T>(x));
-  wahl::each_arg(f, std::forward<Ts>(xs)...);
-}
-#else
-template <class F, class... Ts> void each_arg(F f, Ts &&...xs) {
-  (void)std::initializer_list<int>{((void)(f(std::forward<Ts>(xs))), 0)...};
-}
-#endif
-
 inline std::vector<std::string> wrap(const std::string &text,
                                      unsigned int line_length = 72) {
   std::vector<std::string> output;
@@ -290,15 +277,14 @@ template <class... Args> struct context {
     };
     arg.type = wahl::get_argument_type(x);
     arg.metavar = wahl::type_to_help(x);
-    wahl::each_arg(
-        wahl::internal::overload{
-            [&](const std::string &name) { arg.flags.push_back(name); },
-            [&, this](auto &&attribute) -> decltype(attribute(x, *this, arg),
-                                                    void()) {
-              attribute(x, *this, arg);
-            },
+    auto handle_parse_argument = wahl::internal::overload{
+        [&](const std::string &name) { arg.flags.push_back(name); },
+        [&, this](auto &&attribute) -> decltype(attribute(x, *this, arg),
+                                                void()) {
+          attribute(x, *this, arg);
         },
-        std::forward<Ts>(xs)...);
+    };
+    wahl::internal::each_arg(handle_parse_argument, std::forward<Ts>(xs)...);
     this->add(std::move(arg));
   }
 
