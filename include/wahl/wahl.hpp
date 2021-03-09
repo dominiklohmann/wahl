@@ -159,10 +159,6 @@ template <class... Args> struct subcommand {
   std::function<void(std::deque<std::string>, Args...)> run;
 };
 
-template <class T, class... Args> auto current_name() {
-  return internal::try_name<T>();
-}
-
 template <class... Args> struct context {
   using subcommand_type = subcommand<Args...>;
   using subcommand_map = std::map<std::string, subcommand_type>;
@@ -171,8 +167,9 @@ template <class... Args> struct context {
   subcommand_map subcommands;
 
   bool has_subcommand(const std::string &argv) {
-    return subcommands.find(argv) != subcommands.end() and
-           argv != current_name<Args...>();
+    const auto current_name =
+        internal::try_name<std::tuple_element_t<0, std::tuple<Args...>>>();
+    return subcommands.find(argv) != subcommands.end() and argv != current_name;
   }
 
   bool has_default_capture() { return lookup.find("") != lookup.end(); }
@@ -206,8 +203,9 @@ template <class... Args> struct context {
 
   argument &operator[](const std::string &flag) {
     if (lookup.find(flag) == lookup.end()) {
-      throw std::runtime_error(current_name<Args...>() +
-                               ": unknown flag: " + flag);
+      const auto current_name =
+          internal::try_name<std::tuple_element_t<0, std::tuple<Args...>>>();
+      throw std::runtime_error(current_name + ": unknown flag: " + flag);
     }
     // else
     return arguments[lookup.at(flag)];
@@ -215,8 +213,9 @@ template <class... Args> struct context {
 
   const argument &operator[](const std::string &flag) const {
     if (lookup.find(flag) == lookup.end()) {
-      throw std::runtime_error(current_name<Args...>() +
-                               ": unknown flag: " + flag);
+      const auto current_name =
+          internal::try_name<std::tuple_element_t<0, std::tuple<Args...>>>();
+      throw std::runtime_error(current_name + ": unknown flag: " + flag);
     }
     // else
     return arguments[lookup.at(flag)];
