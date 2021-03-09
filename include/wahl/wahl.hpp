@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <wahl/argument.hpp>
 #include <wahl/argument_type.hpp>
 #include <wahl/internal/absorb.hpp>
 #include <wahl/internal/each_arg.hpp>
@@ -14,6 +15,7 @@
 #include <wahl/internal/try_parse.hpp>
 #include <wahl/internal/type_name.hpp>
 #include <wahl/internal/type_to_help.hpp>
+#include <wahl/subcommand.hpp>
 #include <wahl/value_parser.hpp>
 #include <wahl/version.hpp>
 
@@ -42,60 +44,10 @@ namespace wahl {
 std::vector<std::string> wrap(const std::string &text,
                               unsigned int line_length = 72);
 
-template <class Range> std::string join(Range &&r, std::string delim) {
-  return std::accumulate(std::begin(r), std::end(r), std::string(),
-                         [&](const std::string &x, const std::string &y) {
-                           if (x.empty())
-                             return y;
-                           if (y.empty())
-                             return x;
-                           return x + delim + y;
-                         });
-}
-
-struct argument {
-  argument_type type;
-  std::vector<std::string> flags;
-
-  int count = 0;
-  bool required = false;
-  std::function<void(const std::string &)> write_value;
-  std::vector<std::function<void(const argument &)>> callbacks;
-  std::vector<std::function<void(const argument &)>> eager_callbacks;
-  std::string help, metavar;
-
-  template <class F> void add_callback(F f) {
-    callbacks.emplace_back(std::move(f));
-  }
-
-  template <class F> void add_eager_callback(F f) {
-    eager_callbacks.emplace_back(std::move(f));
-  }
-
-  std::string get_flags() const {
-    std::string result = join(flags, ", ");
-    if (type != argument_type::none)
-      result += " " + metavar;
-    return result;
-  }
-
-  bool write(const std::string &s) {
-    this->write_value(s);
-    count++;
-    for (auto &&f : eager_callbacks)
-      f(*this);
-    return not eager_callbacks.empty();
-  }
-};
-
-template <class... Args> struct subcommand {
-  std::string help;
-  std::function<void(std::deque<std::string>, Args...)> run;
-};
-
 template <class... Args> struct context {
   using subcommand_type = subcommand<Args...>;
-  using subcommand_map = std::map<std::string, subcommand_type>;
+  using subcommand_map = typename subcommand_type::map;
+
   std::vector<argument> arguments;
   std::unordered_map<std::string, int> lookup;
   subcommand_map subcommands;
