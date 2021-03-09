@@ -11,6 +11,7 @@
 #include <wahl/internal/try_options_metavar.hpp>
 #include <wahl/internal/try_parse.hpp>
 #include <wahl/internal/type_name.hpp>
+#include <wahl/value_parser.hpp>
 #include <wahl/version.hpp>
 
 #include <algorithm>
@@ -48,16 +49,6 @@ template <class Range> std::string join(Range &&r, std::string delim) {
                            return x + delim + y;
                          });
 }
-
-template <class T> struct value_parser {
-  static T apply(const std::string &x) {
-    T result;
-    std::stringstream ss;
-    ss.str(x);
-    ss >> result;
-    return result;
-  }
-};
 
 template <class T,
           std::enable_if_t<

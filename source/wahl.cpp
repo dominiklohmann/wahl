@@ -2,7 +2,7 @@
 
 #include <wahl/wahl.hpp>
 
-#include <strstream>
+#include <sstream>
 
 namespace wahl {
 
