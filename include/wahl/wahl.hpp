@@ -6,6 +6,7 @@
 #include <wahl/argument_type.hpp>
 #include <wahl/context.hpp>
 #include <wahl/internal/absorb.hpp>
+#include <wahl/internal/auto_register.hpp>
 #include <wahl/internal/each_arg.hpp>
 #include <wahl/internal/is_container.hpp>
 #include <wahl/internal/overload.hpp>
@@ -237,20 +238,6 @@ template <class T> bool parse(int argc, char const *argv[]) {
   return true;
 }
 
-template <class T, class F> struct auto_register {
-  static bool auto_register_reg_;
-  static bool auto_register_reg_init_() {
-    F::template apply<T>();
-    return true;
-  }
-
-  auto_register() { (void)auto_register_reg_; }
-};
-
-template <class T, class F>
-bool auto_register<T, F>::auto_register_reg_ =
-    auto_register<T, F>::auto_register_reg_init_();
-
 template <class Derived> struct group {
   using context_type = context<Derived &>;
   using subcommand_type = typename context_type::subcommand_type;
@@ -273,7 +260,7 @@ template <class Derived> struct group {
   };
 
   template <class D>
-  struct command : auto_register<D, auto_register_command> {};
+  struct command : internal::auto_register<D, auto_register_command> {};
 
   void run() {}
 };
