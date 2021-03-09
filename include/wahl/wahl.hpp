@@ -10,6 +10,7 @@
 #include <wahl/internal/try_name.hpp>
 #include <wahl/internal/try_parse.hpp>
 #include <wahl/internal/type_name.hpp>
+#include <wahl/version.hpp>
 
 #include <algorithm>
 #include <deque>
