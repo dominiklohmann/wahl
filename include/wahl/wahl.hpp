@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <wahl/internal/absorb.hpp>
 #include <wahl/internal/each_arg.hpp>
 #include <wahl/internal/is_container.hpp>
 #include <wahl/internal/overload.hpp>
@@ -48,29 +49,6 @@ template <class Range> std::string join(Range &&r, std::string delim) {
                              return x;
                            return x + delim + y;
                          });
-}
-
-template <class T,
-          std::enable_if_t<
-              std::disjunction_v<std::negation<internal::is_container<T>>,
-                                 std::is_convertible<T, std::string>>,
-              int> = 0>
-void write_value_to(T &result, const std::string &x) {
-  result = value_parser<T>::apply(x);
-}
-
-template <
-    class T,
-    std::enable_if_t<
-        std::conjunction_v<internal::is_container<T>,
-                           std::negation<std::is_convertible<T, std::string>>>,
-        int> = 0>
-void write_value_to(T &result, const std::string &x) {
-  result.insert(result.end(), value_parser<typename T::value_type>::apply(x));
-}
-
-inline void write_value_to(std::nullptr_t, const std::string &) {
-  // Do nothing
 }
 
 enum class argument_type { none, single, multiple };
@@ -177,7 +155,7 @@ template <class... Args> struct context {
   template <class T, class... Ts> void parse(T &&x, Ts &&...xs) {
     argument arg;
     arg.write_value = [&x](const std::string &s) {
-      wahl::write_value_to(x, s);
+      internal::absorb(x, s);
     };
     arg.type = wahl::get_argument_type(x);
     arg.metavar = wahl::type_to_help(x);
