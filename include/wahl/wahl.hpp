@@ -13,6 +13,7 @@
 #include <wahl/internal/try_options_metavar.hpp>
 #include <wahl/internal/try_parse.hpp>
 #include <wahl/internal/type_name.hpp>
+#include <wahl/internal/type_to_help.hpp>
 #include <wahl/value_parser.hpp>
 #include <wahl/version.hpp>
 
@@ -50,32 +51,6 @@ template <class Range> std::string join(Range &&r, std::string delim) {
                              return x;
                            return x + delim + y;
                          });
-}
-
-template <class T> std::string type_to_help_impl(internal::rank<0>) {
-  if (std::is_same<T, bool>())
-    return "bool";
-  else if (std::is_convertible<T, std::string>())
-    return "string";
-  else if (std::is_integral<T>())
-    return "integer";
-  else if (std::is_floating_point<T>())
-    return "number";
-  else
-    return "argument";
-}
-
-template <class T>
-auto type_to_help_impl(internal::rank<1>) -> std::enable_if_t<
-    std::conjunction_v<internal::is_container_v<T>,
-                       std::negation<std::is_convertible<T, std::string>>>,
-    std::string> {
-  return wahl::type_to_help_impl<typename T::value_type>(internal::rank_v<1>) +
-         "...";
-}
-
-template <class T> std::string type_to_help(const T &) {
-  return "[" + wahl::type_to_help_impl<T>(internal::rank_v<1>) + "]";
 }
 
 struct argument {
@@ -146,7 +121,7 @@ template <class... Args> struct context {
     argument arg;
     arg.write_value = [&x](const std::string &s) { internal::absorb(x, s); };
     arg.type = internal::infer_argument_type(x);
-    arg.metavar = wahl::type_to_help(x);
+    arg.metavar = internal::type_to_help(x);
     auto handle_parse_argument = wahl::internal::overload{
         [&](const std::string &name) { arg.flags.push_back(name); },
         [&, this](auto &&attribute) -> decltype(attribute(x, *this, arg),
