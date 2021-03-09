@@ -452,11 +452,6 @@ parse_attached_value(const std::string &s) {
   }
 }
 
-template <class Container> auto drop(Container c) {
-  c.pop_front();
-  return c;
-}
-
 template <class T, class... Ts>
 auto try_run(internal::rank<2>, T &x, Ts &&...xs) -> decltype(x.run(xs...)) {
   return (x.run(xs...));
@@ -475,7 +470,8 @@ void parse(T &cmd, std::deque<std::string> a, Ts &&...xs) {
   std::string core;
   for (auto &&x : a) {
     if (ctx.has_subcommand(x)) {
-      ctx.subcommands[x].run(drop(a), cmd, xs...);
+      a.pop_front();
+      ctx.subcommands[x].run(a, cmd, xs...);
       return;
     }
     if (x[0] == '-') {
