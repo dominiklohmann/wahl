@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <wahl/argument_type.hpp>
 #include <wahl/internal/absorb.hpp>
 #include <wahl/internal/each_arg.hpp>
 #include <wahl/internal/is_container.hpp>
@@ -49,17 +50,6 @@ template <class Range> std::string join(Range &&r, std::string delim) {
                              return x;
                            return x + delim + y;
                          });
-}
-
-enum class argument_type { none, single, multiple };
-
-template <class T> argument_type get_argument_type(const T &) {
-  if (std::is_same<T, bool>() or std::is_same<T, std::nullptr_t>())
-    return argument_type::none;
-  else if (internal::is_container_v<T>)
-    return argument_type::multiple;
-  else
-    return argument_type::single;
 }
 
 template <class T> std::string type_to_help_impl(internal::rank<0>) {
@@ -154,10 +144,8 @@ template <class... Args> struct context {
 
   template <class T, class... Ts> void parse(T &&x, Ts &&...xs) {
     argument arg;
-    arg.write_value = [&x](const std::string &s) {
-      internal::absorb(x, s);
-    };
-    arg.type = wahl::get_argument_type(x);
+    arg.write_value = [&x](const std::string &s) { internal::absorb(x, s); };
+    arg.type = internal::infer_argument_type(x);
     arg.metavar = wahl::type_to_help(x);
     auto handle_parse_argument = wahl::internal::overload{
         [&](const std::string &name) { arg.flags.push_back(name); },
