@@ -30,30 +30,9 @@
 #endif
 
 namespace wahl {
-inline std::vector<std::string> wrap(const std::string &text,
-                                     unsigned int line_length = 72) {
-  std::vector<std::string> output;
-  std::istringstream iss(text);
 
-  std::string line;
-
-  do {
-    std::string word;
-    iss >> word;
-
-    if (line.length() + word.length() > line_length) {
-      output.push_back(line);
-      line.clear();
-    }
-    line += word + " ";
-
-  } while (iss);
-
-  if (!line.empty()) {
-    output.push_back(line);
-  }
-  return output;
-}
+std::vector<std::string> wrap(const std::string &text,
+                              unsigned int line_length = 72);
 
 template <class Range> std::string join(Range &&r, std::string delim) {
   return std::accumulate(std::begin(r), std::end(r), std::string(),
